@@ -1,0 +1,193 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1rem 0}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem}
+.filter-btn{font-size:13px;padding:5px 12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.filter-btn.active{border-color:var(--color-border-info);background:var(--color-background-info);color:var(--color-text-info)}
+.search-row{margin-bottom:1rem}
+input[type=text]{width:100%;font-size:14px}
+.count-label{font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-weight:500;font-size:12px;color:var(--color-text-secondary);padding:6px 10px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+tbody tr:hover{background:var(--color-background-secondary)}
+tbody td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:top;line-height:1.5}
+td.rank{color:var(--color-text-secondary);font-size:12px;width:36px}
+td.name{font-weight:500;color:var(--color-text-primary);width:160px}
+td.genre-badge{width:110px}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.b-idle{background:#E1F5EE;color:#0F6E56}
+.b-puzzle{background:#EEEDFE;color:#3C3489}
+.b-runner{background:#FAEEDA;color:#633806}
+.b-merge{background:#FAECE7;color:#712B13}
+.b-casual{background:#EAF3DE;color:#27500A}
+.b-strategy{background:#E6F1FB;color:#0C447C}
+.b-action{background:#FCEBEB;color:#791F1F}
+.b-trivia{background:#FBEAF0;color:#72243E}
+td.desc{color:var(--color-text-secondary);font-size:13px}
+@media(max-width:500px){td.name{width:120px}td.desc{display:none}}
+</style>
+<h2 class="sr-only">틱톡 미니게임 Most Played 상위 100개 게임 장르 및 설명 목록</h2>
+<div class="wrap">
+<div class="search-row"><input type="text" id="search" placeholder="게임 이름 검색..."></div>
+<div class="filters" id="filters">
+<button class="filter-btn active" data-genre="all">전체</button>
+<button class="filter-btn" data-genre="idle">방치형 Idle</button>
+<button class="filter-btn" data-genre="puzzle">퍼즐</button>
+<button class="filter-btn" data-genre="runner">달리기/레벨</button>
+<button class="filter-btn" data-genre="merge">합치기/진화</button>
+<button class="filter-btn" data-genre="casual">캐주얼</button>
+<button class="filter-btn" data-genre="strategy">전략/경영</button>
+<button class="filter-btn" data-genre="action">액션</button>
+<button class="filter-btn" data-genre="trivia">퀴즈/두뇌</button>
+</div>
+<div class="count-label" id="count-label">100개 게임</div>
+<table>
+<thead><tr><th>#</th><th>게임 이름</th><th>장르</th><th>한 줄 설명</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<script>
+const games=[
+{r:1,n:"Conquer 100 Levels",g:"runner",d:"형태 변형 캐릭터로 땅·하늘·바다 지형 100단계 돌파"},
+{r:2,n:"My Perfect Airport",g:"strategy",d:"공항 운영 경영 시뮬, 활주로·터미널 확장하며 승객 처리"},
+{r:3,n:"Pizza GO!",g:"casual",d:"피자 재료를 슬라이딩해 주문 완성, 스피드·정확도 게임"},
+{r:4,n:"Overtime Again Today",g:"casual",d:"직장인 야근 공감 테마, 반복 업무 클리어하는 클리커"},
+{r:5,n:"Idle Oil Well",g:"idle",d:"파이프 연결·기계 배치로 유전 개발, 방치하면 오일 자동 생산"},
+{r:6,n:"Flop House",g:"strategy",d:"버려진 집 리모델링 후 매각·임대하는 부동산 경영"},
+{r:7,n:"Slumdog Millionaire",g:"trivia",d:"퀴즈쇼 형식, OX 및 객관식으로 억만장자 도전"},
+{r:8,n:"Idle Wood Inc 2",g:"idle",d:"벌목→제재→가공 공장 체인 자동화, 목재 제국 건설"},
+{r:9,n:"Tiny Nightmare",g:"action",d:"미니어처 공포 배경에서 몬스터 피해 탈출하는 액션"},
+{r:10,n:"My Dream Pizza",g:"casual",d:"나만의 피자 가게 운영, 레시피 개발·손님 만족도 관리"},
+{r:11,n:"100 Stage Rush",g:"runner",d:"100개 장애물 스테이지를 연속으로 빠르게 클리어"},
+{r:12,n:"Water Sort",g:"puzzle",d:"색깔 물 담긴 시험관을 섞어 같은 색끼리 분류하는 퍼즐"},
+{r:13,n:"Grit Hunt",g:"action",d:"사막·황야 배경 슈팅, 적 무리 격파하며 전진"},
+{r:14,n:"Reach 100 Levels",g:"runner",d:"캐릭터를 굴려 100개 레벨 장애물 통과"},
+{r:15,n:"Monster Wave",g:"action",d:"파도처럼 밀려오는 몬스터 떼를 막아내는 타워디펜스형"},
+{r:16,n:"Snipe Sneaky Aliens",g:"action",d:"은신 중인 외계인을 찾아 저격하는 숨은그림찾기+슈팅"},
+{r:17,n:"Vlade Spin",g:"casual",d:"스핀하는 칼날 캐릭터로 적 베어 나가는 회전 액션"},
+{r:18,n:"Ball Factory",g:"idle",d:"공 생산 라인 자동화, 업그레이드로 생산량 폭발적 증가"},
+{r:19,n:"Beat 100 Stages",g:"runner",d:"리듬+장애물 조합, 음악에 맞춰 100스테이지 클리어"},
+{r:20,n:"100 Stages Rampage",g:"runner",d:"파괴형 캐릭터로 100개 스테이지 마구 돌진"},
+{r:21,n:"Rolling Rampage",g:"runner",d:"공처럼 굴러가며 장애물 부수고 레벨 클리어"},
+{r:22,n:"Work Is So Fun",g:"casual",d:"코믹 직장 생활 시뮬, 웃긴 상황 연출 클리커"},
+{r:23,n:"Horde Breaker",g:"action",d:"무한 웨이브 적 군중을 단독으로 격파하는 생존 액션"},
+{r:24,n:"Water Sort-Color Sort",g:"puzzle",d:"색깔 물·오브젝트 분류 퍼즐, Water Sort 변형판"},
+{r:25,n:"Whirlwind Evolution",g:"merge",d:"소용돌이 생물이 진화·합체하며 더 강해지는 머지 게임"},
+{r:26,n:"Slime Dash",g:"runner",d:"슬라임 캐릭터가 장애물 피해 달리는 엔드리스 러너"},
+{r:27,n:"Can't Pass This!",g:"runner",d:"극악 난이도 장벽을 통과하는 도전 과제형 게임"},
+{r:28,n:"Idle Aqua Park",g:"idle",d:"워터파크 자동 운영, 슬라이드·풀 업그레이드로 방문객 유치"},
+{r:29,n:"Sort It All",g:"puzzle",d:"다양한 오브젝트를 카테고리별로 정리하는 분류 퍼즐"},
+{r:30,n:"Savage Quest",g:"action",d:"야만 전사로 적진 돌파, RPG 요소 포함 액션 퀘스트"},
+{r:31,n:"Draw Line Master",g:"puzzle",d:"선을 그어 공·오브젝트를 목표 지점으로 유도하는 드로잉 퍼즐"},
+{r:32,n:"Venom Runner",g:"runner",d:"독액 캐릭터로 장애물 코스 질주"},
+{r:33,n:"Frozen to Death",g:"casual",d:"추위 환경에서 살아남는 생존 캐주얼, 방한 아이템 수집"},
+{r:34,n:"Idle Egg Factory",g:"idle",d:"닭 농장 자동화, 계란 생산→포장→판매 방치형 공장"},
+{r:35,n:"Dot to Dot",g:"puzzle",d:"점과 점을 연결해 그림 완성하는 클래식 퍼즐"},
+{r:36,n:"The Rotting Forest",g:"casual",d:"썩어가는 숲 복원, 오염원 제거하며 환경 살리기"},
+{r:37,n:"Start With a Dragon",g:"merge",d:"드래곤 알 부화→합체→진화, 최강 드래곤 컬렉션"},
+{r:38,n:"Save The Stick : Draw",g:"puzzle",d:"선 그어 스틱맨 함정에서 구출하는 드로잉 퍼즐"},
+{r:39,n:"Airport Ready",g:"strategy",d:"공항 체크인·보안·탑승 프로세스 관리 타임 매니지먼트"},
+{r:40,n:"Tap to President",g:"casual",d:"탭해서 지지율 올리고 대통령 당선되는 클리커"},
+{r:41,n:"Battle Heroes Go",g:"action",d:"자동 전투 영웅들을 배치해 적진 점령하는 전략 액션"},
+{r:42,n:"Venom Go",g:"runner",d:"독 능력 캐릭터로 레벨을 돌파하는 러너"},
+{r:43,n:"Log Slay",g:"casual",d:"도끼로 통나무 자르기, 타이밍 맞춰 최대한 많이 벌목"},
+{r:44,n:"Rush to 100",g:"runner",d:"숫자 100을 향해 달리며 장애물 피하는 숫자 러너"},
+{r:45,n:"Save the Guy: Funny",g:"puzzle",d:"코믹 상황의 사람을 기발한 방법으로 구출하는 퍼즐"},
+{r:46,n:"Dam Builder",g:"strategy",d:"댐 설계·건설로 홍수 막고 수력 발전 운영"},
+{r:47,n:"Wrecking Tyre",g:"casual",d:"타이어를 굴려 장애물 부수는 파괴 쾌감 게임"},
+{r:48,n:"1Q Overlord",g:"trivia",d:"IQ 1짜리 황당 논리로 퀴즈 정답 맞히기, 반전 유머"},
+{r:49,n:"Blade Havoc",g:"action",d:"칼날 캐릭터로 적 군중 베어 나가는 하이퍼 캐주얼 액션"},
+{r:50,n:"Pool King",g:"casual",d:"당구/풀 게임, 공을 굴려 포켓에 넣는 물리 기반 퍼즐"},
+{r:51,n:"Wrecking Wheel",g:"casual",d:"거대 바퀴를 굴려 도시 구조물 파괴"},
+{r:52,n:"OOze Rush",g:"runner",d:"점액 생명체가 흘러내리며 레벨 탈출"},
+{r:53,n:"Screw Land",g:"puzzle",d:"나사·볼트를 풀어 구조물 해체하는 물리 퍼즐"},
+{r:54,n:"Rescue Wukong",g:"puzzle",d:"갇힌 손오공을 단계별 퍼즐 풀어 구출"},
+{r:55,n:"Black Fluid Run",g:"runner",d:"검은 액체처럼 흘러 장애물 통과하는 형태 변형 러너"},
+{r:56,n:"Light Them All",g:"puzzle",d:"전구를 모두 켜는 회로 연결·스위치 퍼즐"},
+{r:57,n:"Gears Wars",g:"strategy",d:"톱니바퀴 배치로 기계 작동시켜 적 격파"},
+{r:58,n:"Color Water Flow",g:"puzzle",d:"색깔 물이 흐를 파이프 경로 연결하는 퍼즐"},
+{r:59,n:"Tire Terror",g:"casual",d:"타이어 무기로 좀비·적 처치, 파괴적 캐주얼"},
+{r:60,n:"Jurassic: Rex Defense",g:"strategy",d:"공룡 공격 막는 타워 디펜스, T-Rex 보스 등장"},
+{r:61,n:"Wrecking Rim",g:"casual",d:"림(바퀴테)으로 물체 부수는 파괴 물리 게임"},
+{r:62,n:"Wheel Fling",g:"casual",d:"바퀴 던져 목표물 맞히는 투척 물리 게임"},
+{r:63,n:"Fist Rising",g:"action",d:"주먹 크기 키워 더 강한 적 격파, 성장형 액션"},
+{r:64,n:"Popular.io",g:"casual",d:"인기도 수치 높이며 .io 스타일로 타 플레이어 흡수"},
+{r:65,n:"My way my life",g:"casual",d:"인생 선택지 시뮬, 직업·연애·성공 경로 선택 스토리"},
+{r:66,n:"Ball Dash",g:"runner",d:"공이 빠르게 굴러가며 낭떠러지·장애물 피하는 러너"},
+{r:67,n:"WATER LOGIC",g:"puzzle",d:"물 흐름 논리 퍼즐, 밸브·파이프 조작으로 정답 도출"},
+{r:68,n:"Can't Stoop it!",g:"runner",d:"멈출 수 없이 달리는 캐릭터, 장애물 점프 타이밍 게임"},
+{r:69,n:"Just Flip",g:"casual",d:"오브젝트를 뒤집어 목표 위치에 착지시키는 물리 캐주얼"},
+{r:70,n:"One Last Cut",g:"puzzle",d:"단 한 번의 절단으로 도형 분리 조건 충족하는 퍼즐"},
+{r:71,n:"Color Water Sort",g:"puzzle",d:"색깔 물 분류 퍼즐 (Water Sort 시리즈 변형)"},
+{r:72,n:"Draw Bridge",g:"puzzle",d:"선 그어 다리 완성, 공·차량이 건너도록 구조물 설계"},
+{r:73,n:"Venom Rush",g:"runner",d:"독 능력자 고속 러너, 독액 뿌리며 장애물 파괴"},
+{r:74,n:"Doge Go! - Bee War",g:"action",d:"도지 캐릭터가 꿀벌 군단과 싸우는 코믹 액션"},
+{r:75,n:"Zero to Hero: Soccer",g:"casual",d:"무명 선수가 연습→스카우트→스타로 성장하는 축구 스토리"},
+{r:76,n:"Too Mush Fun!",g:"casual",d:"버섯 테마 코믹 캐주얼, 버섯 수집·던지기 미션"},
+{r:77,n:"IQ Challenge",g:"trivia",d:"상식을 뒤집는 반전 IQ 테스트, 엉뚱한 정답 유도"},
+{r:78,n:"Water Sort Puzzle",g:"puzzle",d:"Water Sort 시리즈 정통 퍼즐판"},
+{r:79,n:"Draw to Save the Dog",g:"puzzle",d:"선 그어 강아지를 위험에서 구하는 드로잉 퍼즐"},
+{r:80,n:"Idle Oil Empire",g:"idle",d:"Idle Oil Well 확장판, 글로벌 석유 제국 경영"},
+{r:81,n:"My Tiny Tower",g:"strategy",d:"초소형 타워 층마다 상점·주거 채우는 건물 경영"},
+{r:82,n:"3 Tiles Match",g:"puzzle",d:"같은 타일 3개 연결해 제거하는 매치 3 퍼즐"},
+{r:83,n:"Water Sort - Color Puzzle",g:"puzzle",d:"Water Sort 시리즈 또 다른 변형판"},
+{r:84,n:"Can't Handle This!",g:"runner",d:"감당 불가 속도로 달리는 캐릭터 컨트롤 게임"},
+{r:85,n:"Lumber and Lurkers",g:"strategy",d:"숲 벌목 기지 운영하며 잠복한 괴물 방어"},
+{r:86,n:"Tiny Anthill",g:"idle",d:"개미굴 자동 확장, 일개미 수 늘려 식량 자동 수집"},
+{r:87,n:"Tire Boost",g:"casual",d:"타이어를 튕겨 최대한 멀리 날려 보내기"},
+{r:88,n:"Fishing Master",g:"casual",d:"낚시 타이밍 게임, 희귀 물고기 낚아 컬렉션 완성"},
+{r:89,n:"Traffic Jam:Hop On!",g:"puzzle",d:"꽉 막힌 도로에서 차량 이동 순서 맞추는 슬라이딩 퍼즐"},
+{r:90,n:"Bullseye",g:"casual",d:"과녁 정중앙 맞히는 타이밍·조준 게임"},
+{r:91,n:"Backpack Defense War",g:"strategy",d:"가방 속 아이템 조합으로 몬스터 웨이브 방어"},
+{r:92,n:"Idle Aircraft Carrier",g:"idle",d:"항공모함 자동 운영, 전투기 생산·발진 방치형"},
+{r:93,n:"Happy Color Sort",g:"puzzle",d:"밝은 색감의 오브젝트 분류 퍼즐, Color Sort 시리즈"},
+{r:94,n:"Screw Pin - Nuts Jam",g:"puzzle",d:"나사·핀을 정해진 순서로 풀어 구조물 해체"},
+{r:95,n:"Merge Bounce",g:"merge",d:"공을 튕겨 같은 숫자 합치는 머지+볼 게임"},
+{r:96,n:"Sudoku PVP",g:"trivia",d:"실시간 대전 스도쿠, 상대보다 빨리 완성"},
+{r:97,n:"Venom Surge",g:"action",d:"독 에너지 폭발 캐릭터, 서지(급증) 타이밍에 적 섬멸"},
+{r:98,n:"Master of Slacking",g:"casual",d:"몰래 게으름 피우기, 상사 눈피해 딴짓하는 코믹 게임"},
+{r:99,n:"Patrol Officer",g:"casual",d:"순찰 경찰관 시뮬, 위반 차량 단속·범인 추적"},
+{r:100,n:"Goose Evolution Rush",g:"merge",d:"거위 합체·진화시켜 더 강한 종으로 업그레이드"}
+];
+
+const genreLabel={idle:"방치형 Idle",puzzle:"퍼즐",runner:"달리기/레벨",merge:"합치기/진화",casual:"캐주얼",strategy:"전략/경영",action:"액션",trivia:"퀴즈/두뇌"};
+const badgeClass={idle:"b-idle",puzzle:"b-puzzle",runner:"b-runner",merge:"b-merge",casual:"b-casual",strategy:"b-strategy",action:"b-action",trivia:"b-trivia"};
+
+let activeGenre="all";
+let searchTerm="";
+
+function render(){
+  const tbody=document.getElementById("tbody");
+  const filtered=games.filter(g=>{
+    const genreOk=activeGenre==="all"||g.g===activeGenre;
+    const searchOk=g.n.toLowerCase().includes(searchTerm)||g.d.includes(searchTerm);
+    return genreOk&&searchOk;
+  });
+  document.getElementById("count-label").textContent=filtered.length+"개 게임";
+  tbody.innerHTML=filtered.map(g=>`<tr>
+    <td class="rank">${g.r}</td>
+    <td class="name">${g.n}</td>
+    <td class="genre-badge"><span class="badge ${badgeClass[g.g]}">${genreLabel[g.g]}</span></td>
+    <td class="desc">${g.d}</td>
+  </tr>`).join("");
+}
+
+document.getElementById("filters").addEventListener("click",e=>{
+  const btn=e.target.closest(".filter-btn");
+  if(!btn)return;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  activeGenre=btn.dataset.genre;
+  render();
+});
+
+document.getElementById("search").addEventListener("input",e=>{
+  searchTerm=e.target.value.toLowerCase();
+  render();
+});
+
+render();
+</script>
